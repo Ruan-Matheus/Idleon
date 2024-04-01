@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -35,7 +36,7 @@ login.click()
 
 # Loging
 email_element = WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.NAME, email_name)))
-email_element.send_keys(user)
+email_element.send_keys(user)       
 password_element = driver.find_element(By.NAME, password_name)
 password_element.send_keys(password, Keys.ENTER)
     
@@ -46,19 +47,23 @@ WebDriverWait(driver, 6000).until(
 
 while True: 
     # Refreshing the page after 1 or so
+    # TODO: Max ships and constructions
     driver.get("https://idleontoolbox.com/dashboard")
 
     book_count = driver.find_element(By.CSS_SELECTOR, book_count_selector)
     closest_building = driver.find_element(By.CSS_SELECTOR, closest_building_time_selector)
-    printers = WebDriverWait(driver, 20).until(EC.visibility_of_all_elements_located((By.XPATH, f"//*[contains(@aria-label, '{partial_text}')]")))
+    try:
+        printers = WebDriverWait(driver, 20).until(EC.visibility_of_all_elements_located((By.XPATH, f"//*[contains(@aria-label, '{partial_text}')]")))
+    # except TimeoutException was not catching an error when there were no max printers
+    except:
+        print("No printer material")
 
     print(f'\n\n\n{time.ctime(time.time())}')
     print(f'\n{book_count.text}')
     print(f"Closest building: " + closest_building.text)
+    if printers:
+        for printer in printers:
+            sample = printer.get_attribute("aria-label")
+            print(sample)
 
-    for printer in printers:
-        sample = printer.get_attribute("aria-label")
-        print(sample)
     sleep(60)
-
-sleep(100000)
